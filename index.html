@@ -1,1 +1,113 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visio · HomoSapiens</title></head><body><main><h1>Visio</h1><p>Superfície pública conectada ao runtime HomoSapiens.</p><div id="status">Verificando runtime…</div><textarea id="prompt" placeholder="Descreva a imagem"></textarea><button id="run">Gerar</button><div id="msg"></div><div id="preview"></div></main><script>(()=>{const BASE="https://visio-runtime-preview.homosapiens.id",st=document.querySelector("#status"),p=document.querySelector("#prompt"),b=document.querySelector("#run"),m=document.querySelector("#msg"),v=document.querySelector("#preview");fetch(BASE+"/health").then(r=>r.json()).then(j=>st.textContent=j.openai_configured?"Visio online · OpenAI conectada":"Visio online").catch(()=>st.textContent="Status indisponível");b.onclick=async()=>{const i=p.value.trim();if(i.length<3){m.textContent="Descreva a imagem.";return}b.disabled=true;m.textContent="Processando…";try{const z=new FormData;z.set("instruction",i);z.set("output_format","png");z.set("size","1024x1024");z.set("quality","medium");const r=await fetch(BASE+"/api/public/auto",{method:"POST",body:z});if(!r.ok)throw new Error(await r.text());const ct=r.headers.get("content-type")||"";if(ct.startsWith("image/")){const u=URL.createObjectURL(await r.blob());v.innerHTML="<img style='max-width:100%' alt='Resultado Visio'>";v.querySelector("img").src=u}else{const j=await r.json();if(j.url){v.innerHTML="<img style='max-width:100%' alt='Resultado Visio'>";v.querySelector("img").src=j.url}}m.textContent="Concluído."}catch(e){m.textContent="Não foi possível concluir."}finally{b.disabled=false}}})();</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07090d">
+<title>Visio — HomoSapiens Image AI</title>
+<style>
+:root{--bg:#07090d;--panel:#0d1118;--panel2:#111722;--line:#202936;--muted:#8f9bad;--text:#f4f7fb;--accent:#8ea2ff;--accent2:#a98bff;--ok:#6ee7a8;--danger:#ff8f8f}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(1000px 600px at 70% -10%,#17213b 0%,transparent 55%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+aside{border-right:1px solid var(--line);background:rgba(9,12,18,.88);backdrop-filter:blur(18px);padding:26px 20px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:21px;letter-spacing:-.03em}.mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 30px #7586ff33}
+.brand small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.nav{margin-top:36px;display:grid;gap:6px}.nav button{all:unset;display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;color:#b8c1cf;font-size:14px;cursor:pointer}.nav button:hover,.nav button.active{background:#141b27;color:#fff}.nav i{width:8px;height:8px;border-radius:50%;background:#3c4657}.nav .active i{background:var(--accent);box-shadow:0 0 0 5px #8194ff18}
+.sidebar-foot{position:absolute;bottom:24px;left:20px;right:20px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#0f141d}.sidebar-foot b{font-size:12px}.sidebar-foot p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+main{padding:28px 34px 50px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px}.status{display:flex;align-items:center;gap:9px;font-size:12px;color:#b4bdcb}.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 14px #5ee6a066}.chip{padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:#0d121a;color:#aeb8c7;font-size:11px}
+.hero{margin:56px 0 26px}.eyebrow{font-size:12px;color:#a9b4c4;letter-spacing:.11em;text-transform:uppercase}.hero h1{font-size:clamp(38px,5.3vw,72px);max-width:980px;line-height:.98;letter-spacing:-.055em;margin:10px 0 16px;background:linear-gradient(180deg,#fff 0%,#c8d0dd 100%);-webkit-background-clip:text;color:transparent}.hero p{max-width:720px;color:#9aa5b5;line-height:1.7;font-size:15px}
+.workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:18px;align-items:start}.card{background:linear-gradient(180deg,#0d121a,#0b0f16);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 60px #00000035}
+.creator{padding:18px}.drop{min-height:260px;border:1px dashed #364155;border-radius:18px;background:radial-gradient(500px 240px at 50% 0%,#1a2340 0%,#0b1018 65%);display:grid;place-items:center;text-align:center;padding:28px;cursor:pointer;transition:.2s}.drop:hover,.drop.drag{border-color:#7185ff;background:radial-gradient(500px 240px at 50% 0%,#202a4d 0%,#0b1018 65%)}.upload-icon{font-size:28px;width:62px;height:62px;border-radius:18px;display:grid;place-items:center;margin:0 auto 14px;background:linear-gradient(135deg,#20283a,#151c29);border:1px solid #303b4e}.drop strong{font-size:16px}.drop p{margin:7px 0 0;color:var(--muted);font-size:12px}
+.field{margin-top:16px}.field label{font-size:11px;letter-spacing:.08em;color:#99a6b8;text-transform:uppercase}.field textarea{width:100%;margin-top:8px;min-height:124px;resize:vertical;border:1px solid #283241;border-radius:16px;background:#090d13;color:#f4f7fb;padding:15px 16px;font:inherit;line-height:1.55;outline:none}.field textarea:focus{border-color:#6378ef;box-shadow:0 0 0 3px #6378ef18}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.controls select{width:100%;border:1px solid #283241;border-radius:13px;background:#0a0e14;color:#dce4ef;padding:12px 13px;outline:none}.run{width:100%;margin-top:12px;border:0;border-radius:14px;padding:14px 16px;font-weight:800;font-size:14px;cursor:pointert;color:#0a0d12;background:linear-gradient(90deg,#dfe6ff,#c9d3ff 55%,#d8c9ff);box-shadow:0 10px 30px #8aa0ff22}.run:disabled{opacity:.55;cursor:not-allowed}.msg{min-height:20px;margin-top:10px;font-size:12px;color:var(--muted)}.msg.ok{color:#8ce9b6}.msg.err{color:var(--danger)}
+.sidecol{display:grid;gap:18px}.preview{min-height:370px;padding:16px;display:grid;place-items:center;overflow:hidden;position:relative}.preview:before{content:"";position:absolute;inset:16px;border-radius:16px;background:linear-gradient(45deg,#0e141e 25%,#121925 25%,#121925 50%,#0e141e 50%,#0e141e 75%,#121925 75%);background-size:24px 24px;opacity:.45}.preview-inner{position:relative;z-index:1;text-align:center;color:#7f8b9c;font-size:12px}.preview img{position:relative;z-index:1;max-width:100%;max-height:580px;border-radius:15px;display:block;box-shadow:0 18px 45px #0008}.mini{padding:16px}.mini h3{margin:0 0 4px;font-size:14px}.mini {{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.api-row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.api-row code{font-size:11px;color:#bac4d4}.api-btn{border:1px solid #2d3747;background:#131a25;color:#dce5f3;border-radius:10px;padding:8px 10px;font-size:11px}
+.features{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.feature{padding:15px;border:1px solid var(--line);border-radius:16px;background:#0b1017}.feature b{font-size:12px}.feature p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:980px){.shell{grid-template-columns:1fr}aside{display:none}main{padding:22px}.workspace{grid-template-columns:1fr}.features{grid-template-columns:1fr}.hero{margin-top:42px}.hero h1{font-size:48px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand"><div class="mark"></div><div>Visio<small>HomoSapiens Image AI</small></div></div>
+    <div class="nav">
+      <button class="active"><i></i>Estúdio</button>
+      <button><i></i>Gerar imagem</button>
+      <button><i></i>Editar imagem</button>
+      <button><i></i>Remover fundo</button>
+    <button><i></i>API Developers</button>
+    </div>
+    <div class="sidebar-foot"><b>Motor protegido</b><p>A chave OpenAI permanece somente no backend HomoSapiens.</p></div>
+  </aside>
+  <main>
+    <div class="topbar">
+      <div class="status"><span class="dot"></span><span id="status">Verificando runtime…</span></div>
+      <div class="chip">Visio 4.1 · Production</div>
+    </div>
+    <section class="hero">
+      <div class="eyebrow">Image intelligence</div>
+      <h1>Crie imagens que parecem ter sido feitas por uma equipe inteira.</h1>
+      <p>Gere, edite e transforme visuais em uma única superfície. O processamento acontece no runtime HomoSapiens, com OpenAI protegida no backend.</p>
+    </section>
+    <section class="workspace">
+      <div class="card creator">
+        <div id="drop" class="drop">
+          <div>
+            <div class="upload-icon">↥</div>
+            <strong id="fileLabel">Arraste uma imagem ou clique para enviar</strong>
+            <p>PNG, JPG ou WEBP · até 25 MB · opcional</p>
+          </div>
+        </div>
+        <input id="file" type="file" accept="image/*" hidden>
+        <div class="field">
+          <label>Instrução visual</label>
+          <textarea id="prompt" placeholder="Ex.: Crie uma fotografia editorial de um perfume sobre mármore preto, iluminação lateral cinematográfica, fundo sofisticado e acabamento premium."></textarea>
+        </div>
+        <div class="controls">
+          <select id="size">
+            <option value="1024x1024">Quadrado · 1024×1024</option>
+            <option value="1536x1024">Paisagem · 1536×1024</option>
+            <option value="1024x1536">Retrato · 1024×1536</option>
+          </select>
+          <select id="quality">
+            <option value="low">Qualidade rápida</option>
+            <option value="medium" selected>Qualidade padrão</option>
+            <option value="high">Qualidade alta</option>
+          </select>
+        </div>
+        <button id="run" class="run">Gerar com Visio</button>
+        <div id="msg" class="msg">Descreva uma imagem ou envie uma referência para editar.</div>
+        <div class="features">
+          <div class="feature"><b>Gerar</b><p>Crie imagens novas a partir de um briefing visual.</p></div>
+          <div class="feature"><b>Editar</b><p>Envie uma imagem e descreva exatamente o que deve mudar.</p></div>
+          <div class="feature"><b>Remover fundo</b><p>Preserve o assunto principal com transparîncia limpa.</p></div>
+        </div>
+      </div>
+      <div class="sidecol">
+        <div class="card preview" id="preview"><div class="preview-inner"><div style="font-size:34px;margin-bottom:10px">◌</div>Seu resultado aparecerá aqui.</div></div>
+        <div class="card mini">
+          <h3>Visio API</h3>
+          <p>Integre geração e edhção de imagens diretamente em produtos, agências e fluxos internos.</p>
+          <div class="api-row"><code>/api/public/auto</code><button class="api-btn" type="button">Developers</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+(()=>{const BASE="https://visio-runtime-preview.homosapiens.id";
+const f=document.querySelector("#file"),d=document.querySelector("#drop"),fl=document.querySelector("#fileLabel"),p=document.querySelector("#prompt"),s=document.querySelector("#size"),q=document.querySelector("#quality"),b=document.querySelector("#run"),m=document.querySelector("#msg"),v=document.querySelector("#preview"),st=document.querySelector("#status");
+fetch(BASE+"/health",{cache:"no-store"}).then(r=>r.json()).then(j=>{st.textContent=j.openai_configured?"Visio online · OpenAI conectada":"Visio online · motor não configurado"}).catch(()=>st.textContent="Status indisponível");
+d.onclick=()=>f.click();
+["dragenter","dragover"].forEach(x=>d.addEventListener(x,e=>{e.preventDefault();d.classList.add("drag")}));
+["dragleave","drop"].forEach(x=>d.addEventListener(x,e=>{e.preventDefault();d.classList.remove("drag")}));
+d.addEventListener("drop",e=>{const x=e.dataTransfer.files?.[0];if(!x)return;const t=new DataTransfer;t.items.add(x);f.files=t.files;f.dispatchEvent(new Event("change"))});
+f.onchange=()=>fl.textContent=f.files[0]?.name||"Arraste uma imagem ou clique para enviar";
+b.onclick=async()=>{const i=p.value.trim();if(i.length<3){m.className="msg err";m.textContent="Descreva o que pretende criar ou editar.";return}
+b.disabled=true;m.className="msg";m.textContent="Processando no Visio…";
+try{const z=new FormData;z.set("instruction",i);z.set("output_format","png");z.set("size",s.value);z.set("quality",q.value);if(f.files[0])z.set("image",f.files[0]);
+const r=await fetch(BASE+"/api/public/auto",{method:"POST",body:z});if(!r.ok)throw new Error(await r.text());const ct=r.headers.get("content-type")||"";
+if(ct.startsWith("image/")){const u=URL.createObjectURL(await r.blob());v.innerHTML="<img alt='Resultado Visio'>";v.querySelector("img").src=u}else{const já=await r.json();if(ja.url){v.innerHTML="<img alt='Resultado Visio'>";v.querySelector("img").src=ja.url}else v.innerHTML="<div class='preview-inner'>"+JSON.stringify(ja)+"</div>"}
+m.className="msg ok";m.textContent="Concluído. Resultado gerado pelo Visio."}catch(e){console.error(e);m.className="msg err";m.textContent="Não foi possível concluir. Tente novamente."}finally{b.disabled=false}};
+})();
+</script>
+</body>
+</html>
