@@ -1,9 +1,12 @@
-# Visio Public Surface
+# Visio Static — espelho de compatibilidade
 
-Superfície pública canônica do Visio.
+Este repositório **não é mais a fonte canônica do produto Visio**.
 
-- Produção: https://visio.homosapiens.id
-- Runtime: https://visio-runtime-preview.homosapiens.id
-- API pública: `/api/public/auto`
-- OpenAI somente no backend.
-- Não armazenar segredos neste repositório.
+- Fonte canônica da interface: `homosapiens-id/visio-web`
+- Produção pública: `https://visio.homosapiens.id`
+- Runtime/API: `https://app.homosapiens.id`
+- Runtime de produção: `homosapiens-id/homosapiens-app`, branch `hostinger-node`
+
+O papel deste repositório é apenas manter um mecanismo de deploy/espelho compatível com a hospedagem estática da Hostinger. O script `deploy.sh` publica o conteúdo da branch `main` de `visio-web` no `public_html` de `visio.homosapiens.id`.
+
+Não adicionar novas funcionalidades aqui. Não armazenar segredos.
