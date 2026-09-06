@@ -1,0 +1,46 @@
+name: Sync canonical Visio web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sync-canonical-visio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Fetch canonical Visio
+        run: |
+          git clone --depth 1 https://github.com/homosapiens-id/visio-web.git /tmp/visio-web
+      - name: Sync public surface
+        run: |
+          cp /tmp/visio-web/app/index.html app/index.html
+          cp /tmp/visio-web/app/studio.js app/studio.js
+          cp /tmp/visio-web/app/studio.css app/studio.css
+          cp /tmp/visio-web/app/digital-human.js app/digital-human.js
+          cp /tmp/visio-web/app/digital-human.css app/digital-human.css
+          cp /tmp/visio-web/app/personal-voice.js app/personal-voice.js
+          node --check app/studio.js
+          node --check app/digital-human.js
+          node --check app/personal-voice.js
+      - name: Assert byte-exact convergence
+        run: |
+          for f in app/index.html app/studio.js app/studio.css app/digital-human.js app/digital-human.css app/personal-voice.js; do
+            cmp --silent "$f" "/tmp/visio-web/$f" || { echo "diverged: $f"; exit 1; }
+          done
+      - name: Commit
+        run: |
+          git config user.name "HomoSapiens Automation"
+          git config user.email "automation@homosapiens.id"
+          git add app/index.html app/studio.js app/studio.css app/digital-human.js app/digital-human.css app/personal-voice.js
+          if git diff --cached --quiet; then echo "already converged"; exit 0; fi
+          git commit -m "sync(visio): mirror canonical Digital Human surface"
+          git push origin HEAD:main
