@@ -1,4 +1,4 @@
-name: Deploy Visio to GitHub Pages
+name: Validate Visio static mirror
 
 on:
   push:
@@ -7,27 +7,24 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-  deploy:
-    environment:
-      name: github-pages
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v5
+      - name: Validate static surface
+        run: |
+          test -f index.html
+          test -f app/index.html
+          test -f app/studio.js
+          test -f app/studio.css
+          test -f app/digital-human.js
+          test -f app/digital-human.css
+          test -f app/personal-voice.js
+          node --check app/studio.js
+          node --check app/digital-human.js
+          node --check app/personal-voice.js
+      - name: Deployment note
+        run: |
+          echo "Production static deployment target is Hosting, not GitHub Pages."
