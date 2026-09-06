@@ -131,11 +131,26 @@ $('#analyzeBtn').onclick=async()=>{clearError();busy(true);try{const img=await r
 $('#editBtn').onclick=async()=>{clearError();busy(true);try{const img=await readFile($('#editFile').files[0]);if(!img)throw new Error('Escolha uma imagem.');const d=await req('/api/visio/edit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:img,prompt:$('#editPrompt').value,quality:'high'})});showImage(d.image_data_url||d.image_url,'Imagem editada',d.model)}catch(e){error(e)}finally{busy(false)}};
 $('#voiceBtn').onclick=async()=>{clearError();busy(true);try{const d=await req('/api/visio/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:$('#voiceText').value,voice:$('#voiceName').value,instructions:$('#voiceDirection').value||'Fale em português do Brasil, de forma natural, clara e profissional.'})});showAudio(d.audio_url||d.audio_data_url,'Voz sintética',d.model)}catch(e){error(e)}finally{busy(false)}};
 
-async function pollVideo(id){
+async function pollVideo(id,avatarId=''){
   clearInterval(videoTimer);videoTimer=setInterval(async()=>{
     try{
-      const d=await req('/api/visio/video/'+encodeURIComponent(id));$('#resultTitle').textContent=`Vídeo: ${d.status} · ${d.progress||0}%`;
-      if(d.status==='completed'){clearInterval(videoTimer);$('#canvas').innerHTML=`<video controls autoplay src="${API}/api/visio/video/${encodeURIComponent(id)}/content"></video>`;$('#resultTitle').textContent='Vídeo concluído'}
+      const statusPath=avatarId
+        ? `/api/visio/avatars/${encodeURIComponent(avatarId)}/video/${encodeURIComponent(id)}`
+        : '/api/visio/video/'+encodeURIComponent(id);
+      const d=await req(statusPath),qc=d.identity_qc;
+      $('#resultTitle').textContent=`Vídeo: ${d.status} · ${d.progress||0}%${qc?.status&&qc.status!=='pending_video_validation'?` · QC ${qc.status}`:''}`;
+      if(d.status==='completed'){
+        clearInterval(videoTimer);
+        if(avatarId&&qc?.status!=='pass'){
+          const detail=qc?.status==='fail'
+            ? `QC de identidade reprovado · score ${qc.overall_score??'—'} · mínimo estrito ${qc.strict_min??'—'}`
+            : `QC de identidade não verificado · ${qc?.reason||'avaliação indisponível'}`;
+          showText(`${detail}\nO vídeo foi retido e não será exibido automaticamente.`,'Vídeo retido pelo QC de identidade');
+          return;
+        }
+        $('#canvas').innerHTML=`<video controls autoplay src="${API}/api/visio/video/${encodeURIComponent(id)}/content"></video>`;
+        $('#resultTitle').textContent=avatarId?`Vídeo concluído · QC aprovado · score ${qc?.overall_score??'—'}`:'Vídeo concluído';
+      }
       if(d.status==='failed'){clearInterval(videoTimer);throw new Error('A geração do vídeo falhou.')}
     }catch(e){clearInterval(videoTimer);error(e)}
   },4000)
@@ -148,7 +163,7 @@ $('#videoBtn').onclick=async()=>{
     if(avatarId){path=`/api/visio/avatars/${encodeURIComponent(avatarId)}/animate`}
     else payload.image_data_url=await readFile($('#videoFile').files[0]);
     const d=await req(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    $('#canvas').innerHTML=`<div class="empty"><span>▶</span><b>Vídeo em produção</b><small>Job ${d.video_id}</small></div>`;$('#resultTitle').textContent='Vídeo enfileirado';$('#model').textContent=d.model;pollVideo(d.video_id);
+    $('#canvas').innerHTML=`<div class="empty"><span>▶</span><b>Vídeo em produção</b><small>Job ${d.video_id}</small></div>`;$('#resultTitle').textContent='Vídeo enfileirado';$('#model').textContent=d.model;pollVideo(d.video_id,avatarId);
   }catch(e){error(e)}finally{busy(false)}
 };
 $('#new').onclick=()=>location.reload();
