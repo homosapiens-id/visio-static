@@ -1,0 +1,9 @@
+.dh-panel{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#080b1266;display:grid;gap:10px}
+.dh-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.dh-head small{color:var(--muted);font-size:9px;text-align:right}
+.dh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dh-grid.two{grid-template-columns:1fr 1fr}
+.dh-grid label,.dh-panel>label{font-size:9px;color:var(--muted);display:grid;gap:5px}.dh-grid select,.dh-panel select{padding:9px}
+.dh-actions{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center}.dh-actions.triple{grid-template-columns:repeat(3,1fr)}
+.dh-actions small{color:var(--green);font-size:9px}#identityQcState[data-status="fail"],#dhState.bad{color:#ffc5c5}
+.dh-check{display:flex!important;gap:9px!important;align-items:flex-start}.dh-check input{width:auto!important;margin-top:2px}
+.dh-voice{margin-top:24px;border-color:#c9a7ff44}.dh-voice>button{width:100%}
+@media(max-width:1000px){.dh-grid,.dh-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-actions.triple{grid-template-columns:1fr}}
