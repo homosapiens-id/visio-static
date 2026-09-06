@@ -6,13 +6,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Apply temporal QC mirror patch
+        run: python3 scripts/patch-temporal-qc.py
       - name: Validate static surface
         run: |
           test -f index.html
@@ -25,6 +29,15 @@ jobs:
           node --check app/studio.js
           node --check app/digital-human.js
           node --check app/personal-voice.js
-      - name: Deployment note
+          grep -F "QC de identidade reprovado" app/studio.js
+          grep -F "Vídeo retido pelo QC de identidade" app/studio.js
+      - name: Commit mirror
         run: |
-          echo "Production static deployment target is Hosting, not GitHub Pages."
+          git config user.name "HomoSapiens Automation"
+          git config user.email "automation@homosapiens.id"
+          git add app/studio.js
+          if git diff --cached --quiet; then echo "already converged"; exit 0; fi
+          git commit -m "sync(visio): mirror temporal identity QC surface"
+          git push origin HEAD:main
+      - name: Deployment note
+        run: echo "Production static deployment target is Hosting, not GitHub Pages."
