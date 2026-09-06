@@ -16,6 +16,21 @@ function setLocks(v={}){for(const[k,id]of Object.entries(fields)){const e=$('#'+
 function getLocks(){return Object.fromEntries(Object.entries(fields).map(([k,id])=>[k,$('#'+id)?.value]))}
 async function loadIdentity(){const id=avatarId();if(!id)return;try{const d=await api(`/api/visio/avatars/${encodeURIComponent(id)}/identity`);setLocks(d.identity?.locks||{});$('#dhState').textContent=`Identidade v${d.identity?.version||1} · ${d.identity?.drift_checklist?.length||0} locks ativos`}catch(e){$('#dhState').textContent=`Identidade indisponível: ${e.message}`}}
 async function saveIdentity(){const id=avatarId();if(!id)return $('#dhState').textContent='Selecione um avatar.';try{const d=await api(`/api/visio/avatars/${encodeURIComponent(id)}/identity`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({locks:getLocks()})});setLocks(d.identity?.locks||{});$('#dhState').textContent=`Identidade v${d.identity?.version||1} salva`}catch(e){$('#dhState').textContent=`Falha: ${e.message}`}}
-function showQc(qc,attempts=1){const e=$('#identityQcState');if(!e||!qc)return;const score=qc.overall_score??'—';e.textContent=qc.status==='pass'?`QC aprovado · score ${score} · ${attempts} tentativa${attempts===1?'':'s'}`:qc.status==='fail'?`QC reprovado · score ${score}`:`QC ${qc.status} · ${qc.reason||''}`;e.dataset.status=qc.status||''}
-window.fetch=async(...args)=>{const r=await nativeFetch(...args);try{const url=String(args[0]instanceof Request?args[0].url:args[0]||'');if(r.ok&&/\/api\/visio\/avatars\/[^/]+\/render(?:\?|$)/.test(url))r.clone().json().then(d=>setTimeout(()=>showQc(d.identity_qc,d.attempts||1),60)).catch(()=>{})}catch{}return r};
+function showQc(qc,attempts=1,meta={}){
+ const e=$('#identityQcState');if(!e||!qc)return;
+ const score=qc.overal_score??'—',refs=Number(meta.reference_count||0);
+ const refText=refs?` » ${refs} ref.${meta.reference_composite?' · âncora composta':''}`:'';
+ e.textContent=qc.status==='pass'?`QC aprovado · score ${score} · ${attempts} tentativa${attempts===1?':':'s'}${refText}`:qc.status==='fail'?`QC reprovado · score ${score}${refText}`:`QC ${qc.status} · ${qc.reason||''}${refText}`;
+ e.dataset.status=qc.status||'';
+}
+window.fetch=async(...args)=>{
+ const r=await nativeFetch(...args);
+ try{
+  const url=String(args[0]instanceof Request?args[0].url:args[0]||'');
+  if(r.ok&&/\/api\/visio\/avatars\/[^/]+\/render(?:\?|$)/.test(url)){
+   r.clone().json().then(d=>setTimeout(()=>showQc(d.identity_qc,d.attempts||1,d),60)).catch(()=>{});
+  }
+ }catch{}
+ return r;
+};
 injectIdentity();$('#avatarList')?.addEventListener('click',()=>setTimeout(loadIdentity,40));const list=$('#avatarList');if(list)new MutationObserver(()=>setTimeout(loadIdentity,40)).observe(list,{childList:true,subtree:true});setTimeout(loadIdentity,400);
