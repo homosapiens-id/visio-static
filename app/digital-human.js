@@ -18,9 +18,9 @@ async function loadIdentity(){const id=avatarId();if(!id)return;try{const d=awai
 async function saveIdentity(){const id=avatarId();if(!id)return $('#dhState').textContent='Selecione um avatar.';try{const d=await api(`/api/visio/avatars/${encodeURIComponent(id)}/identity`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({locks:getLocks()})});setLocks(d.identity?.locks||{});$('#dhState').textContent=`Identidade v${d.identity?.version||1} salva`}catch(e){$('#dhState').textContent=`Falha: ${e.message}`}}
 function showQc(qc,attempts=1,meta={}){
  const e=$('#identityQcState');if(!e||!qc)return;
- const score=qc.overal_score??'—',refs=Number(meta.reference_count||0);
+ const score=qc.overall_score??'—',refs=Number(meta.reference_count||0);
  const refText=refs?` » ${refs} ref.${meta.reference_composite?' · âncora composta':''}`:'';
- e.textContent=qc.status==='pass'?`QC aprovado · score ${score} · ${attempts} tentativa${attempts===1?':':'s'}${refText}`:qc.status==='fail'?`QC reprovado · score ${score}${refText}`:`QC ${qc.status} · ${qc.reason||''}${refText}`;
+ e.textContent=qc.status==='pass'?`QC aprovado · score ${score} · ${attempts} tentativa${attempts===1?'':'s'}${refText}`:qc.status==='fail'?`QC reprovado · score ${score}${refText}`:`QC ${qc.status} · ${qc.reason||''}${refText}`;
  e.dataset.status=qc.status||'';
 }
 window.fetch=async(...args)=>{
