@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, autorun]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - name: Validate static surface

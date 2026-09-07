@@ -1,10 +1,6 @@
 name: Sync canonical Visio web
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/sync-canonical-visio.yml"
   workflow_dispatch:
 
 permissions:
@@ -12,7 +8,10 @@ permissions:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on:
+      group: hs-production
+      labels: [self-hosted, autorun]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
         with:
